@@ -44,7 +44,11 @@ class Products with ChangeNotifier {
 
   // var _showFavorite = false;
 
+  final String authToken;
+
   List<Product> _items = [];
+
+  Products(this.authToken, this._items);
 
   List<Product> get items {
     // if (_showFavorite == true) {
@@ -65,7 +69,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> addProduct(Product newProduct) async {
-    const url = 'https://kaings-flutter-proj6.firebaseio.com/products.json';
+    final url =
+        'https://kaings-flutter-proj6.firebaseio.com/products.json?auth=$authToken';
     // const url = 'https://kaings-flutter-proj6.firebaseio.com/products'; // test error handling
 
     try {
@@ -95,7 +100,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> fetchProducts() async {
-    const url = 'https://kaings-flutter-proj6.firebaseio.com/products.json';
+    final url =
+        'https://kaings-flutter-proj6.firebaseio.com/products.json?auth=$authToken';
 
     try {
       final response = await http.get(url);
@@ -130,7 +136,8 @@ class Products with ChangeNotifier {
     // if error occurs, the removed item will be restored
 
     // final url = 'https://kaings-flutter-proj6.firebaseio.com/products/$id';  // test error
-    final url = 'https://kaings-flutter-proj6.firebaseio.com/products/$id.json';
+    final url =
+        'https://kaings-flutter-proj6.firebaseio.com/products/$id.json?auth=$authToken';
 
     final toBeRemovedProductIndex =
         _items.indexWhere((product) => product.id == id);

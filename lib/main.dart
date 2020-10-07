@@ -23,8 +23,25 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (ctx) => Auth(),
         ),
-        ChangeNotifierProvider(
-          create: (ctx) => Products(),
+
+        // fetching products from server needs token (from Auth class)
+        // `ChangeNotifierProxyProvider` enables passing value easily
+        // `ChangeNotifierProxyProvider<X, Y>` refers to:
+        // X ..... the provider which becomes the dependency of fetching product
+        //         (in this case is Auth, to get token). Dependency Provider always
+        //         MUST be before the provider that depends on it (NotifierProvider of Auth MUST be before Products)
+        // Y ..... the provider which is the result (Products)
+        // If you need more than 1 dependency, use `ChangeNotifierProxyProvider2..3..4.. upto 6`
+
+        // `ChangeNotifierProxyProvider`: `create` set to null to avoid error (in this case)
+
+        ChangeNotifierProxyProvider<Auth, Products>(
+          create: null,
+          // authData is dynamic value that Products provider gets from Auth provider
+          // ONLY Products provider will REBUILD when Auth provider has changes (Others DO NOT REBUILD)
+          update: (ctx, authData, previousProductsData) => Products(
+              authData.getToken,
+              previousProductsData == null ? [] : previousProductsData.items),
         ),
         ChangeNotifierProvider(
           create: (ctx) => Cart(),
