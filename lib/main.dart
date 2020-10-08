@@ -12,6 +12,7 @@ import './screens/cart_screen.dart';
 import './screens/order_screen.dart';
 import './screens/user_products_screen.dart';
 import './screens/edit_product_screen.dart';
+import './screens/splash_screen.dart';
 
 void main() => runApp(MyApp());
 
@@ -58,7 +59,23 @@ class MyApp extends StatelessWidget {
             accentColor: Colors.deepOrange,
             fontFamily: 'Lato',
           ),
-          home: authData.isAuth ? ProductOverviewScreen() : AuthScreen(),
+          home: authData.isAuth
+              ? ProductOverviewScreen()
+              : FutureBuilder(
+                  // use `FutureBuilder` to subscribe to tryAutoSignIn
+                  // when `isAuth` is false, it will trigger `tryAutoSignIn`
+                  // if successful, it will result in `isAuth` to be true (_token is available)
+                  // if fail, it will go to `AuthScreen`
+                  future: authData.tryAutoSignIn(),
+                  builder: (ctx, authDataSnapshot) {
+                    print('authDataSnapshot..... ${authDataSnapshot.data}');
+                    // when the `Future` is pending, show `SplashScreen`
+                    return authDataSnapshot.connectionState ==
+                            ConnectionState.waiting
+                        ? SplashScreen()
+                        : AuthScreen();
+                  },
+                ),
           routes: {
             ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
             CartScreen.routeName: (ctx) => CartScreen(),

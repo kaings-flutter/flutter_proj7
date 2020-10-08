@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../secret/my_credentials.dart';
 import '../models/http_exception.dart';
 
@@ -61,6 +63,16 @@ class Auth with ChangeNotifier {
       _autoSignOut();
 
       notifyListeners();
+
+      // save data on device storage
+      final prefs = await SharedPreferences.getInstance();
+      final userData = json.encode({
+        'token': _token,
+        'userId': _userId,
+        'expiryDate': _expiryDate
+            .toIso8601String() // toIso860String is string format for DateTime. `toIso8601String` to convert DataTime to String value
+      });
+      prefs.setString('userData', userData);
     } catch (err) {
       print('_authenticate_err..... $err');
 
@@ -76,11 +88,15 @@ class Auth with ChangeNotifier {
     return _authenticate(email, password, 'signInWithPassword');
   }
 
-  void signOut() {
+  Future<void> signOut() async {
     _token = null;
     _expiryDate = null;
     _userId = null;
     _authTimer = null;
+
+    final prefs = await SharedPreferences.getInstance();
+    // prefs.remove('userData'); // to remove specific key ONLY
+    prefs.clear(); // to remove ALL keys
 
     notifyListeners();
   }
@@ -93,5 +109,32 @@ class Auth with ChangeNotifier {
     }
     final timeToExpiry = _expiryDate.difference(DateTime.now()).inSeconds;
     _authTimer = Timer(Duration(seconds: timeToExpiry), signOut);
+  }
+
+  Future<bool> tryAutoSignIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey('userData')) {
+      return false;
+    }
+
+    final userData =
+        json.decode(prefs.getString('userData')) as Map<String, Object>;
+    final tokenExpiryDate = DateTime.parse(userData['expiryDate']);
+
+    if (tokenExpiryDate.isBefore(DateTime.now()) ||
+        userData['token'] == null ||
+        userData['userId'] == null) {
+      return false;
+    }
+
+    _token = userData['token'];
+    _userId = userData['userId'];
+    _expiryDate = DateTime.parse(userData['expiryDate']);
+
+    _autoSignOut();
+
+    notifyListeners();
+
+    return true;
   }
 }
