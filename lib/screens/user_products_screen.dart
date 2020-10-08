@@ -16,6 +16,10 @@ class UserProductsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // final productsData = Provider.of<Products>(context);
 
+    // to prove there is no INFINITE REBUILD, the following code only printed once
+    // when the page reload & when onPullRefresh is executed
+    print('rebuilding UserProductsScreen..... ');
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Your Products'),
