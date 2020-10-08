@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:provider/provider.dart';
 import '../screens/order_screen.dart';
 import '../screens/user_products_screen.dart';
+import '../providers/auth.dart';
 
 class AppDrawer extends StatelessWidget {
   @override
@@ -35,6 +37,18 @@ class AppDrawer extends StatelessWidget {
             title: Text('Manage Products'),
             onTap: () {
               Navigator.of(context).pushNamed(UserProductsScreen.routeName);
+            },
+          ),
+          Divider(),
+          ListTile(
+            leading: Icon(Icons.exit_to_app),
+            title: Text('Sign Out'),
+            onTap: () {
+              // to avoid error when signout, we need to pop the drawer first
+              // and then sign out
+              Navigator.of(context).pop();
+
+              Provider.of<Auth>(context, listen: false).signOut();
             },
           ),
         ],
