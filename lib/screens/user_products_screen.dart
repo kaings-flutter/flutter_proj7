@@ -14,7 +14,7 @@ class UserProductsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productsData = Provider.of<Products>(context);
+    // final productsData = Provider.of<Products>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -29,27 +29,29 @@ class UserProductsScreen extends StatelessWidget {
         ],
       ),
       body: FutureBuilder(
-        future: onPullRefresh(context),
-        builder: (ctx, dataSnapshot) =>
-            dataSnapshot.connectionState == ConnectionState.waiting
-                ? Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () => onPullRefresh(context),
-                    child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: ListView.builder(
-                        itemCount: productsData.items.length,
-                        itemBuilder: (ctx, idx) => UserProductItem(
-                          productsData.items[idx].id,
-                          productsData.items[idx].title,
-                          productsData.items[idx].imageUrl,
+          future: onPullRefresh(context),
+          builder: (ctx, dataSnapshot) =>
+              dataSnapshot.connectionState == ConnectionState.waiting
+                  ? Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : Consumer<Products>(
+                      builder: (ctx, productsData, consumerChild) =>
+                          RefreshIndicator(
+                        onRefresh: () => onPullRefresh(context),
+                        child: Padding(
+                          padding: EdgeInsets.all(8),
+                          child: ListView.builder(
+                            itemCount: productsData.items.length,
+                            itemBuilder: (ctx, idx) => UserProductItem(
+                              productsData.items[idx].id,
+                              productsData.items[idx].title,
+                              productsData.items[idx].imageUrl,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-      ),
+                    )),
     );
   }
 }
